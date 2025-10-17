@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthContext';
-import { AppRoutes } from '@/routes/AppRoutes';
+import { AppRoutes } from '@/layout/AppRoutes';
 import App from '@/App';
 import '@/index.css';
 

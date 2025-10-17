@@ -5,7 +5,7 @@ export default function Toast({
   open,
   message,
   onClose,
-  duration = 1800,
+  duration = 3000,
   type = 'success',
 }) {
   useEffect(() => {
@@ -16,20 +16,28 @@ export default function Toast({
 
   if (!open) return null;
 
+  const isError = type === 'error';
+
   return createPortal(
-    <div style={styles.backdrop} onClick={onClose}>
+    <div
+      className="fixed inset-0 grid place-items-center bg-black/15 z-[1000]"
+      onClick={onClose}
+      aria-live="polite"
+      role="status"
+    >
       <div
-        style={{
-          ...styles.box,
-          borderColor: type === 'error' ? '#e11d48' : '#10b981',
-        }}
+        className={[
+          'flex items-center gap-2 px-3.5 py-2.5 bg-white',
+          'border rounded-lg shadow-xl text-sm max-w-xs',
+          isError ? 'border-rose-600' : 'border-emerald-500',
+        ].join(' ')}
         onClick={(e) => e.stopPropagation()}
       >
-        <div
-          style={{
-            ...styles.dot,
-            background: type === 'error' ? '#e11d48' : '#10b981',
-          }}
+        <span
+          className={[
+            'w-2.5 h-2.5 rounded-full shrink-0',
+            isError ? 'bg-rose-600' : 'bg-emerald-500',
+          ].join(' ')}
         />
         <span>{message}</span>
       </div>
@@ -37,32 +45,3 @@ export default function Toast({
     document.body,
   );
 }
-
-const styles = {
-  backdrop: {
-    position: 'fixed',
-    inset: 0,
-    display: 'grid',
-    placeItems: 'center',
-    background: 'rgba(0,0,0,0.15)',
-    zIndex: 1000,
-  },
-  box: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    padding: '10px 14px',
-    background: '#fff',
-    border: '1px solid',
-    borderRadius: 8,
-    boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
-    fontSize: 14,
-    maxWidth: 320,
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: '50%',
-    flex: '0 0 10px',
-  },
-};

@@ -2,15 +2,15 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
 import Create from '@/pages/Create';
-import { PrivateRoute } from '@/routes/PrivateRoute';
+import PrivateRoute from '@/layout/PrivateRoute';
 
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* Pública */}
+      {}
       <Route path="/login" element={<Login />} />
 
-      {/* Privadas */}
+      {}
       <Route
         path="/dashboard"
         element={
@@ -28,7 +28,7 @@ export const AppRoutes = () => {
         }
       />
 
-      {/* Fallback */}
+      {}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

@@ -1,4 +1,3 @@
-// Intenta parsear string JSON. Si falla, retorna null.
 function tryParseJSON(str) {
   if (typeof str !== 'string') return null;
   try {
@@ -8,12 +7,9 @@ function tryParseJSON(str) {
   }
 }
 
-// Extrae un texto base del error (puede venir como JSON, array de errores, etc.)
 function extractRawMessage(err) {
-  // si viene con .message (Error lanzado por fetcher)
   let raw = err?.message ?? err;
 
-  // si el fetcher guardó .data, úsalo
   if (err?.data) {
     const d = err.data;
     return (
@@ -21,7 +17,6 @@ function extractRawMessage(err) {
     );
   }
 
-  // si .message es JSON, úsalo
   const parsed = tryParseJSON(raw);
   if (parsed) {
     if (Array.isArray(parsed) && parsed[0]?.Message) return parsed[0].Message;
@@ -30,10 +25,8 @@ function extractRawMessage(err) {
     );
   }
 
-  // texto plano
   if (typeof raw === 'string') return raw;
 
-  // fallback
   try {
     return JSON.stringify(raw);
   } catch {
@@ -41,19 +34,16 @@ function extractRawMessage(err) {
   }
 }
 
-// Devuelve un mensaje amigable según el contexto
 export function mapApiError(err, context) {
   const base = extractRawMessage(err) || '';
   const lower = base.toLowerCase();
 
-  // Casos comunes globales
   if (err?.status === 401 || lower.includes('unauthorized')) {
     return 'Tu sesión expiró o no tienes autorización. Inicia sesión nuevamente.';
   }
   if (lower.includes('timeout'))
     return 'El servidor tardó demasiado en responder. Intenta de nuevo.';
 
-  // ---- Contextos específicos ----
   if (context === 'LOGIN') {
     if (lower.includes('base-64')) return 'La contraseña no es válida.';
     if (lower.includes('password') || lower.includes('contraseña'))
@@ -70,7 +60,6 @@ export function mapApiError(err, context) {
   }
 
   if (context === 'CREATE_ACTION') {
-    // Validaciones típicas de Spring
     if (
       (lower.includes("field 'icon'") || lower.includes('icon')) &&
       lower.includes('must not be null')
@@ -90,7 +79,6 @@ export function mapApiError(err, context) {
     ) {
       return 'La descripción es obligatoria.';
     }
-    // size must be between X and Y
     const sizeMatch = base.match(/size must be between (\d+) and (\d+)/i);
     if (sizeMatch) {
       const [, min, max] = sizeMatch;
@@ -110,6 +98,5 @@ export function mapApiError(err, context) {
     return 'No pudimos cargar las acciones.';
   }
 
-  // Fallback general
   return 'Ocurrió un error al procesar la solicitud.';
 }

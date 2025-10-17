@@ -1,7 +1,6 @@
 import { authFetcher } from '@/utils/fetcher';
 
 function classifyLoginError(raw) {
-  // Normaliza a string legible
   const msg =
     typeof raw === 'string'
       ? raw
@@ -9,7 +8,6 @@ function classifyLoginError(raw) {
 
   const lower = (msg || '').toLowerCase();
 
-  // Heurísticas típicas
   if (
     lower.includes('user') ||
     lower.includes('usuario') ||
@@ -23,11 +21,9 @@ function classifyLoginError(raw) {
     lower.includes('contraseña') ||
     lower.includes('base-64')
   ) {
-    // Tu backend devolvió "not a valid Base-64..." cuando la contraseña no es válida
     return { field: 'password', message: 'Contraseña incorrecta' };
   }
 
-  // Respuestas como array [{ Message: "..."}]
   if (Array.isArray(raw) && raw[0]?.Message) {
     const m = String(raw[0].Message);
     if (m.toLowerCase().includes('password'))
@@ -42,14 +38,12 @@ function classifyLoginError(raw) {
 
 export const authService = {
   async login({ username, password }) {
-    // Hacemos el fetch sin capturar aquí; si falla, procesamos el body de error
     try {
       const data = await authFetcher('/api/Authentication/Login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       });
 
-      // Extraer token (ajusta si cambia el shape)
       const token =
         data?.token ||
         data?.accessToken ||

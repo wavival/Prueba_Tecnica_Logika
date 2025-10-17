@@ -1,10 +1,9 @@
-// src/pages/Create.jsx
 import { useState } from 'react';
 import { actionsService } from '@/api/actionsService';
 import { useNavigate } from 'react-router-dom';
 import FeedbackModal from '@/components/FeedbackModal';
 import { mapApiError } from '@/utils/errorMapper';
-import ActionForm from '@/components/ActionForm'; // usa el form componetizado
+import ActionForm from '@/components/ActionForm';
 
 export default function Create() {
   const [loading, setLoading] = useState(false);
@@ -28,16 +27,8 @@ export default function Create() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl p-6">
-      <div className="mb-4 flex items-center">
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="rounded border px-3 py-2 text-sm hover:bg-gray-50"
-        >
-          ← Volver al Dashboard
-        </button>
-      </div>
-      <h1 className="mb-4 text-2xl font-semibold">Crear Acción</h1>
+    <section className="mx-auto max-w-2xl p-6 relative">
+      <h1 className="mb-4 text-2xl font-semibold">Crear categoría</h1>
 
       <ActionForm loading={loading} onSubmit={handleSubmit} />
 
@@ -52,6 +43,6 @@ export default function Create() {
             navigate('/dashboard', { state: { refresh: Date.now() } });
         }}
       />
-    </div>
+    </section>
   );
 }

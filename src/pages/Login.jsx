@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { authService } from '@/api/authService';
 import ErrorMessage from '@/components/ErrorMessage';
-import logo from '@/assets/logo.svg';
-import mailIcon from '@/assets/mail.svg';
-import lockIcon from '@/assets/password.svg';
-import seePass from '@/assets/see-password.svg';
+import logo from '@/assets/logos/logo.svg';
+import mailIcon from '@/assets/icons/mail.svg';
+import lockIcon from '@/assets/icons/password.svg';
+import seePass from '@/assets/icons/see-password.svg';
 
 export default function Login() {
   const { login } = useAuth();
@@ -124,7 +124,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading || !username || !password} // 👈 deshabilita si está cargando o campos vacíos
-            className={`w-[260px] mx-auto rounded-md px-4 py-3 text-sm font-medium text-white transition-colors
+            className={`w-[260px] mx-auto rounded-md px-4 py-3 text-sm font-medium text-white transition-colors cursor-pointer
             ${
               loading || !username || !password
                 ? 'bg-slate-300 cursor-not-allowed'

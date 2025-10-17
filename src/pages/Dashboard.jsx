@@ -1,25 +1,31 @@
-// src/pages/Dashboard.jsx
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { actionsService } from '@/api/actionsService';
-import { useAuth } from '@/hooks/useAuth';
-import Table from '@/components/Table';
-import Pagination from '@/components/Pagination';
-import Loader from '@/components/Loader';
+import search from '@/assets/icons/search.svg';
+import filter from '@/assets/icons/filter.svg';
+import edit from '@/assets/icons/edit.svg';
+import trash from '@/assets/icons/trash.svg';
+import more from '@/assets/icons/join.svg';
+import arrowRight from '@/assets/icons/arrow-right.svg';
+import arrowLeft from '@/assets/icons/arrow-left.svg';
 
-const statusLabel = (s) =>
-  typeof s === 'number' ? (s === 1 ? 'ACTIVE' : 'INACTIVE') : String(s);
+const statusLabel = (s) => {
+  if (typeof s === 'number') return s === 1 ? 'Activo' : 'Inactivo';
+  if (String(s).toUpperCase() === 'ACTIVE') return 'Activo';
+  if (String(s).toUpperCase() === 'INACTIVE') return 'Inactivo';
+  return String(s);
+};
 
 export default function Dashboard() {
-  const { logout } = useAuth();
   const navigate = useNavigate();
-
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [tab, setTab] = useState('Categorías');
+  const [q, setQ] = useState('');
 
   const fetchList = useCallback(async () => {
     setLoading(true);
@@ -44,118 +50,282 @@ export default function Dashboard() {
     fetchList();
   }, [fetchList]);
 
-  const columns = useMemo(
-    () => [
-      { key: 'name', header: 'Nombre' },
-      { key: 'description', header: 'Descripción' },
-      {
-        key: 'image',
-        header: 'Imagen',
-        render: (row) => {
-          const img =
-            row.iconUrl ||
-            row.icon ||
-            row.imageUrl ||
-            row.image ||
-            row.iconPath;
-          return img ? (
-            <img
-              src={img}
-              alt={row.name}
-              className="h-10 w-10 rounded object-cover"
-            />
-          ) : (
-            '—'
-          );
-        },
-      },
-      {
-        key: 'color',
-        header: 'Color',
-        render: (row) => {
-          const color = row.color || row.hex || row.colorHex;
-          return (
-            <div className="flex items-center gap-2">
-              <span
-                className="h-4 w-4 rounded border"
-                style={{ background: color || '#ccc' }}
-              />
-              <span>{color || '—'}</span>
-            </div>
-          );
-        },
-      },
-      {
-        key: 'status',
-        header: 'Status',
-        render: (row) => {
-          const s = row.status ?? row.isActive ?? row.enabled;
-          const label = statusLabel(s);
-          const ok = label === 'ACTIVE' || s === 1;
-          return (
-            <span
-              className={`rounded px-2 py-0.5 text-xs font-medium ${ok ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}
-            >
-              {ok ? 'ACTIVE' : 'INACTIVE'}
-            </span>
-          );
-        },
-      },
-    ],
-    [],
+  const hasPrev = useMemo(() => pageNumber > 1, [pageNumber]);
+  const hasNext = useMemo(
+    () => total > pageNumber * pageSize,
+    [total, pageNumber, pageSize],
   );
 
-  const hasPrev = pageNumber > 1;
-  const hasNext = total > pageNumber * pageSize;
+  const filtered = useMemo(() => {
+    if (!q.trim()) return items;
+    const t = q.toLowerCase();
+    return items.filter(
+      (a) =>
+        (a.name || '').toLowerCase().includes(t) ||
+        (a.description || '').toLowerCase().includes(t),
+    );
+  }, [items, q]);
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
-      <header className="mb-4 flex items-center gap-2">
-        <h1 className="mr-auto text-2xl font-semibold">Dashboard</h1>
-        <button
-          onClick={() => navigate('/create')}
-          className="rounded bg-indigo-600 px-3 py-2 text-white hover:bg-indigo-700"
-        >
-          Crear acción
-        </button>
-        <button
-          onClick={fetchList}
-          className="rounded border px-3 py-2 hover:bg-gray-50"
-        >
-          Recargar
-        </button>
-        <button
-          onClick={() => {
-            logout();
-            navigate('/login');
-          }}
-          className="rounded border px-3 py-2 hover:bg-gray-50"
-        >
-          Logout
-        </button>
+    <main className="space-y-6">
+      {}
+      <h1 className="text-3xl font-bold text-gray-900">Categorías</h1>
+
+      {}
+      <header className="border-b border-gray-200">
+        <nav className="flex gap-6 text-sm font-medium">
+          {['Categorías', 'Tipos', 'Evidencias'].map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`-mb-px pb-2 ${
+                tab === t
+                  ? 'border-b-2 border-indigo-700 text-indigo-700'
+                  : 'text-gray-500 hover:text-indigo-600'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </nav>
       </header>
 
-      {loading && <Loader label="Cargando acciones..." />}
-      {!!error && !loading && <p className="text-rose-600">{error}</p>}
-      {!loading && !error && (
-        <>
-          <Table
-            columns={columns}
-            rows={items}
-            rowKey={(r, i) => r.id || r.uuid || i}
-            emptyText="Sin resultados."
-          />
-          <div className="mt-3">
-            <Pagination
-              page={pageNumber}
-              pageSize={pageSize}
-              total={total}
-              onPrev={() => hasPrev && setPageNumber((p) => Math.max(1, p - 1))}
-              onNext={() => hasNext && setPageNumber((p) => p + 1)}
+      {}
+      <section className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <img
+              src={search}
+              alt="Search icon"
+              className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2"
+            />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Buscar"
+              className="w-64 rounded-md border border-gray-300 pl-10 pr-3 py-2 text-sm focus:border-indigo-400 focus:ring-1 focus:ring-indigo-100"
             />
           </div>
-        </>
-      )}
-    </div>
+          <button
+            type="button"
+            className="rounded shover:bg-gray-50 p-5 text-gray-700 hover:text-indigo-700 cursor-pointer relative"
+          >
+            <img
+              src={filter}
+              alt="Filter icon"
+              className="h-5 w-5 absolute -left-1 top-1/2 transform -translate-y-1/2"
+            />
+            Filtros
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/create')}
+            className="rounded-md bg-indigo-900 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 cursor-pointer"
+          >
+            Crear tipo de categoría
+          </button>
+        </div>
+      </section>
+
+      {}
+      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-x-auto">
+          <table className="w-full table-auto text-left text-sm">
+            <thead className="bg-gray-50 text-xs font-medium text-gray-600">
+              <tr>
+                <th className="px-4 py-3">Nombre de la categoría</th>
+                <th className="px-4 py-3">Ícono de la categoría</th>
+                <th className="px-4 py-3">Estado</th>
+                <th className="px-4 py-3">Descripción</th>
+                <th className="px-4 py-3">Fecha de creación</th>
+                <th className="px-4 py-3 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {loading && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center">
+                    Cargando…
+                  </td>
+                </tr>
+              )}
+
+              {error && !loading && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-4 py-4 text-center text-rose-600"
+                  >
+                    {error}
+                  </td>
+                </tr>
+              )}
+
+              {!loading && !error && filtered.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
+                    Sin resultados.
+                  </td>
+                </tr>
+              )}
+
+              {!loading &&
+                !error &&
+                filtered.map((a, i) => {
+                  const img =
+                    a.iconUrl || a.icon || a.imageUrl || a.image || a.iconPath;
+                  const status = a.status ?? a.isActive ?? a.enabled;
+                  const created =
+                    a.createdAt || a.creationDate || a.created || '';
+
+                  return (
+                    <tr key={a.id || a.uuid || i} className="text-gray-800">
+                      <td className="px-4 py-3">
+                        <div className="font-medium">{a.name}</div>
+                        <div className="text-gray-500 text-xs"></div>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {img ? (
+                          <img
+                            src={img}
+                            alt={a.name}
+                            className="h-6 w-6 rounded object-cover"
+                          />
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex items-center justify-center rounded-md border px-3 py-0.5 text-xs font-medium ${
+                            statusLabel(status) === 'Activo'
+                              ? 'border-green-300 bg-green-100 text-green-800'
+                              : 'border-gray-300 bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          {statusLabel(status)}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3 text-gray-700">
+                        {a.description}
+                      </td>
+
+                      <td className="px-4 py-3 text-gray-500">
+                        {created
+                          ? new Date(created).toLocaleDateString('es-ES', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })
+                          : '—'}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-3 text-gray-500">
+                          <button
+                            className="relative rounded shover:bg-gray-50 p-5"
+                            title="Editar"
+                          >
+                            <img
+                              src={edit}
+                              alt="Edit icon"
+                              className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2"
+                            />
+                          </button>
+                          <button
+                            className="relative rounded shover:bg-gray-50 p-5"
+                            title="Eliminar"
+                          >
+                            <img
+                              src={trash}
+                              alt="Delete icon"
+                              className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2"
+                            />
+                          </button>
+                          <button
+                            className="relative rounded shover:bg-gray-50 p-5"
+                            title="Ver"
+                          >
+                            <img
+                              src={more}
+                              alt="more icon"
+                              className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2"
+                            />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+
+        {}
+        <div className="flex items-center justify-center border-t border-gray-200 px-4 py-3 text-sm text-gray-600 gap-8">
+          <div className="flex items-center gap-2">
+            <span>Resultados por página</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(parseInt(e.target.value, 10));
+                setPageNumber(1);
+              }}
+              className="rounded border border-gray-300 px-2 py-1 text-sm"
+            >
+              {[10, 20, 30].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            {total === 0
+              ? '0'
+              : `${(pageNumber - 1) * pageSize + 1} - ${Math.min(
+                  pageNumber * pageSize,
+                  total,
+                )} de ${total}`}
+          </div>
+
+          <div className="flex items-center gap-6 justify-center">
+            <button
+              disabled={!hasPrev}
+              onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
+              className="relative px-2 py-1 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Anterior"
+            >
+              <img
+                src={arrowLeft}
+                alt="left icon"
+                className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2"
+              />
+            </button>
+            <button
+              disabled={!hasNext}
+              onClick={() => setPageNumber((p) => p + 1)}
+              className="relative px-2 py-1 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Siguiente"
+            >
+              <img
+                src={arrowRight}
+                alt="right icon"
+                className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2"
+              />
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }

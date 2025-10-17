@@ -1,4 +1,3 @@
-// src/components/Loader.jsx
 export default function Loader({ label = 'Cargando...' }) {
   return (
     <div className="flex flex-col items-center justify-center py-8 text-slate-500">

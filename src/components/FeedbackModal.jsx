@@ -3,12 +3,12 @@ import { createPortal } from 'react-dom';
 
 export default function FeedbackModal({
   open,
-  type = 'success', // 'success' | 'error'
+  type = 'success',
   title,
   message,
   onClose,
   autoClose = true,
-  duration = 1600,
+  duration = 3000,
 }) {
   useEffect(() => {
     if (!open || !autoClose) return;
@@ -34,7 +34,7 @@ export default function FeedbackModal({
         className={`w-[90%] max-w-sm rounded-lg border bg-white shadow-lg transition-all duration-200 ${colorClass}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {}
         <div
           className={`flex items-center gap-2 border-b px-4 py-3 ${bgClass}`}
         >
@@ -44,7 +44,7 @@ export default function FeedbackModal({
           </strong>
         </div>
 
-        {/* Body */}
+        {}
         {message && (
           <div className="px-5 py-4 text-sm text-gray-700 whitespace-pre-line">
             {message}
