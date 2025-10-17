@@ -1,14 +1,26 @@
 import { useState } from 'react';
 import { actionsService } from '@/api/actionsService';
 import { useNavigate } from 'react-router-dom';
+import FeedbackModal from '@/components/FeedbackModal';
+import { mapApiError } from '@/utils/errorMapper';
+
+const STATUS_OPTIONS = [
+  { label: 'ACTIVE', value: 1 },
+  { label: 'INACTIVE', value: 0 },
+];
 
 export default function Create() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState('#2f80ed');
-  const [status, setStatus] = useState('ACTIVE');
+  const [status, setStatus] = useState(1);
   const [iconFile, setIconFile] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState('success');
+  const [modalMsg, setModalMsg] = useState('');
+
   const navigate = useNavigate();
 
   const onSubmit = async (e) => {
@@ -22,19 +34,44 @@ export default function Create() {
         status,
         iconFile,
       });
-      alert('Acción creada con éxito');
-      navigate('/dashboard');
+      setModalType('success');
+      setModalMsg('Acción creada con éxito');
+      setModalOpen(true);
     } catch (err) {
-      console.error(err);
-      alert(err.message || 'Error creando acción');
+      setModalType('error');
+      setModalMsg(mapApiError(err, 'CREATE_ACTION'));
+      setModalOpen(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    if (modalType === 'success') {
+      navigate('/dashboard', { state: { refresh: Date.now() } });
     }
   };
 
   return (
     <form onSubmit={onSubmit} style={{ padding: 24 }}>
       <h1>Crear Acción</h1>
+
+      {/* 🔹 Nuevo botón para volver */}
+      <button
+        type="button"
+        onClick={() => navigate('/dashboard')}
+        style={{
+          marginBottom: 16,
+          padding: '6px 12px',
+          background: '#f3f4f6',
+          border: '1px solid #ccc',
+          borderRadius: 6,
+          cursor: 'pointer',
+        }}
+      >
+        ← Volver al Dashboard
+      </button>
 
       <div>
         <label>Nombre</label>
@@ -69,9 +106,15 @@ export default function Create() {
       <div>
         <label>Status</label>
         <br />
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="ACTIVE">ACTIVE</option>
-          <option value="INACTIVE">INACTIVE</option>
+        <select
+          value={status}
+          onChange={(e) => setStatus(parseInt(e.target.value, 10))}
+        >
+          {STATUS_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -89,6 +132,15 @@ export default function Create() {
       <button type="submit" disabled={loading}>
         {loading ? 'Enviando...' : 'Crear'}
       </button>
+
+      <FeedbackModal
+        open={modalOpen}
+        type={modalType}
+        title={modalType === 'success' ? 'Éxito' : 'Error'}
+        message={modalMsg}
+        onClose={closeModal}
+        autoClose={modalType === 'success'}
+      />
     </form>
   );
 }

@@ -6,5 +6,5 @@ export default function App() {
   if (!isAuthReady) return <div>Cargando autenticación...</div>;
 
   console.log('Token en contexto:', token);
-  return <div>Sesión iniciada</div>;
+  return <div>Be Kind</div>;
 }

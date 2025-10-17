@@ -7,47 +7,92 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // puedes precargar el usuario de la prueba para acelerar
-  const [username, setUsername] = useState('a.berrio@yopmail.com');
-  const [password, setPassword] = useState('AmuFK8G4Bh64Q1uX+IxQhw==');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+
+  // errores por campo
+  const [userError, setUserError] = useState('');
+  const [passError, setPassError] = useState('');
+  const [formError, setFormError] = useState('');
+
+  const clearErrors = () => {
+    setUserError('');
+    setPassError('');
+    setFormError('');
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    clearErrors();
     setLoading(true);
     try {
       const token = await authService.login({ username, password });
-      login(token); // guarda en contexto + localStorage
-      navigate('/dashboard'); // pasa al dashboard
+      login(token);
+      navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Error de login');
+      if (err.field === 'username') setUserError(err.message);
+      else if (err.field === 'password') setPassError(err.message);
+      else setFormError(err.message || 'Credenciales inválidas');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={onSubmit} style={{ padding: 24 }}>
+    <form onSubmit={onSubmit} style={{ padding: 24, maxWidth: 360 }}>
       <h1>Login</h1>
-      <input
-        placeholder="username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <br />
-      <input
-        type="password"
-        placeholder="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <br />
-      <button type="submit" disabled={loading}>
+
+      <label>
+        Usuario (email)
+        <input
+          style={{ display: 'block', width: '100%', marginTop: 4 }}
+          value={username}
+          onChange={(e) => {
+            setUsername(e.target.value);
+            if (userError) setUserError('');
+          }}
+          autoComplete="username"
+          inputMode="email"
+        />
+      </label>
+      {userError && (
+        <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>
+          {userError}
+        </div>
+      )}
+
+      <div style={{ height: 10 }} />
+
+      <label>
+        Contraseña
+        <input
+          type="password"
+          style={{ display: 'block', width: '100%', marginTop: 4 }}
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            if (passError) setPassError('');
+          }}
+          autoComplete="current-password"
+        />
+      </label>
+      {passError && (
+        <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>
+          {passError}
+        </div>
+      )}
+
+      {formError && (
+        <div style={{ color: 'red', fontSize: 13, marginTop: 8 }}>
+          {formError}
+        </div>
+      )}
+
+      <div style={{ height: 12 }} />
+      <button type="submit" disabled={loading} style={{ width: '100%' }}>
         {loading ? 'Ingresando...' : 'Ingresar'}
       </button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
     </form>
   );
 }
