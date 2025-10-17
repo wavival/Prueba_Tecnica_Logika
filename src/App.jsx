@@ -1,10 +1,8 @@
 import { useAuth } from '@/hooks/useAuth';
 
 export default function App() {
-  const { token, isAuthReady } = useAuth();
+  const { isAuthReady } = useAuth();
 
-  if (!isAuthReady) return <div>Cargando autenticación...</div>;
-
-  console.log('Token en contexto:', token);
-  return <div>Be Kind</div>;
+  if (!isAuthReady) return <h3>Cargando autenticación...</h3>;
+  return;
 }

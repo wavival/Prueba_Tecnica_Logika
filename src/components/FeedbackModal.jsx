@@ -19,67 +19,39 @@ export default function FeedbackModal({
   if (!open) return null;
 
   const isError = type === 'error';
-  const color = isError ? '#ef4444' : '#10b981'; // rojo / verde
+  const colorClass = isError
+    ? 'text-red-500 border-red-400'
+    : 'text-green-600 border-green-400';
+  const dotClass = isError ? 'bg-red-500' : 'bg-green-500';
+  const bgClass = isError ? 'bg-red-50' : 'bg-green-50';
 
   return createPortal(
-    <div style={styles.backdrop} onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
-        style={{ ...styles.card, borderColor: color }}
+        className={`w-[90%] max-w-sm rounded-lg border bg-white shadow-lg transition-all duration-200 ${colorClass}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ ...styles.header, color }}>
-          <div style={{ ...styles.dot, background: color }} />
-          <strong>{title ?? (isError ? 'Error' : 'Éxito')}</strong>
+        {/* Header */}
+        <div
+          className={`flex items-center gap-2 border-b px-4 py-3 ${bgClass}`}
+        >
+          <div className={`h-2.5 w-2.5 rounded-full ${dotClass}`}></div>
+          <strong className="text-base font-medium">
+            {title ?? (isError ? 'Error' : 'Éxito')}
+          </strong>
         </div>
-        {message && <div style={styles.body}>{message}</div>}
-        <div style={styles.actions}></div>
+
+        {/* Body */}
+        {message && (
+          <div className="px-5 py-4 text-sm text-gray-700 whitespace-pre-line">
+            {message}
+          </div>
+        )}
       </div>
     </div>,
     document.body,
   );
 }
-
-const styles = {
-  backdrop: {
-    position: 'fixed',
-    inset: 0,
-    display: 'grid',
-    placeItems: 'center',
-    background: 'rgba(0,0,0,0.25)',
-    zIndex: 1000,
-  },
-  card: {
-    width: 'min(92vw, 360px)',
-    background: '#fff',
-    border: '1px solid',
-    borderRadius: 10,
-    boxShadow: '0 20px 60px rgba(0,0,0,0.16)',
-    overflow: 'hidden',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    padding: '12px 14px',
-  },
-  dot: { width: 10, height: 10, borderRadius: '50%' },
-  body: {
-    padding: '0 14px 12px 14px',
-    color: '#111827',
-    fontSize: 14,
-    whiteSpace: 'pre-wrap',
-  },
-  actions: {
-    padding: '10px 14px',
-    display: 'flex',
-    justifyContent: 'flex-end',
-  },
-  btn: {
-    background: 'transparent',
-    border: '1px solid',
-    padding: '6px 10px',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontSize: 14,
-  },
-};
